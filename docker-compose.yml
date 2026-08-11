@@ -20,7 +20,7 @@ services:
 
   user-service:
     build:
-      context: ./user-service
+      context: ./microservice/user-service
     container_name: health-base-user-service
     restart: unless-stopped
     environment:
@@ -36,7 +36,7 @@ services:
 
   clinic-service:
     build:
-      context: ./clinic-service
+      context: ./microservice/clinic-service
     container_name: health-base-clinic-service
     restart: unless-stopped
     environment:
@@ -52,7 +52,7 @@ services:
 
   api-gateway:
     build:
-      context: ./api-gateway
+      context: ./microservice/api-gateway
     container_name: health-base-api-gateway
     restart: unless-stopped
     environment:
