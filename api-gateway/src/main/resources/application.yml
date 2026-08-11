@@ -16,6 +16,15 @@ spring:
                 # its root, not under /api/users, so strip the /api/users prefix
                 # (2 path segments) before forwarding.
                 - StripPrefix=2
+            - id: clinic-service
+              uri: http://clinic-service:8082
+              predicates:
+                - Path=/api/clinics/**
+              filters:
+                # clinic-service exposes its own endpoints (incl. /actuator/health) at
+                # its root, not under /api/clinics, so strip the /api/clinics prefix
+                # (2 path segments) before forwarding.
+                - StripPrefix=2
 
 server:
   port: ${SERVER_PORT:8080}

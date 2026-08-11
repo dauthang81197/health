@@ -34,6 +34,22 @@ services:
       postgres:
         condition: service_healthy
 
+  clinic-service:
+    build:
+      context: ./clinic-service
+    container_name: health-base-clinic-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: health_base_clinic
+      DB_USER: health_base
+      DB_PASSWORD: health_base
+      SERVER_PORT: 8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -46,6 +62,8 @@ services:
       - "8080:8080"
     depends_on:
       user-service:
+        condition: service_healthy
+      clinic-service:
         condition: service_healthy
 
 volumes:
