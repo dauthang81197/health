@@ -8,6 +8,7 @@ set -euo pipefail
 
 DATABASES=(
   "health_base_user"
+  "health_base_clinic"
 )
 
 for db in "${DATABASES[@]}"; do
