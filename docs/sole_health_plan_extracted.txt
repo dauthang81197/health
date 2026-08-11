@@ -1,0 +1,59 @@
+Rebuild Project Plan: Sole Health Base Platform
+Portfolio project mapped to JD: Senior Fullstack Engineer (ReactJS/Java/GraphQL)
+
+1. Mục tiêu
+Dựng lại dự án healthcare cũ (Sole Health Base Platform) thành một portfolio project bao phủ toàn bộ yêu cầu kỹ thuật trong JD Senior Fullstack Engineer (ReactJS/Java/GraphQL) — vừa có câu chuyện nghiệp vụ mạch lạc để trình bày phỏng vấn, vừa chứng minh năng lực với đúng stack nhà tuyển dụng cần.
+2. Mapping JD → Kiến trúc
+Frontend
+React + TypeScript, giữ nguyên các module nghiệp vụ cũ (User/Role, Clinic, Medication, Diagnostic Test) nhưng viết lại với TS strict.
+Tách component theo design system (form builder, dynamic renderer) tương tự dự án Document & Workflow — thể hiện tư duy configurability mà JD nhấn mạnh.
+API layer
+GraphQL (Apollo Server hoặc Spring GraphQL) song song REST cho một số endpoint — JD yêu cầu rõ kinh nghiệm thiết kế schema và client integration GraphQL.
+Backend — Microservices (Java / Spring Boot)
+user-service — auth, role, MFA
+clinic-service — appointment, scheduling
+medication-service
+diagnostic-service
+notification-service — tiêu thụ event từ Kafka
+Mỗi service expose OpenAPI spec riêng, đúng yêu cầu "microservices and OpenAPI standards" trong JD.
+Data layer
+PostgreSQL — Dữ liệu nghiệp vụ chính.
+Redis — Cache session, rate limit, cache kết quả GraphQL query.
+ElasticSearch — Tìm kiếm bệnh nhân/thuốc/lịch sử khám (full-text + filter).
+S3 — Lưu file: kết quả xét nghiệm, ảnh, tài liệu ký số.
+Streaming / Async
+Kafka làm cầu nối sự kiện giữa các service (ví dụ: appointment.created → notification-service), phục vụ đúng phần "workflows, notifications" trong JD.
+Serverless / Analytics (làm sau cùng)
+Lambda — Xử lý event nhỏ khi upload S3 (resize ảnh, gửi email, giả lập quét virus).
+Redshift + EMR — Đẩy log/appointment history từ Postgres → S3 → job xử lý → Redshift, dựng dashboard thống kê đơn giản. Đây là phần ít ứng viên có, giúp hồ sơ nổi bật.
+3. Lộ trình triển khai
+#
+Bước
+Mô tả
+1
+Core: React/TS + Java + PostgreSQL
+Dựng lại các module cũ của Sole Health (User/Role, Clinic, Medication, Diagnostic) bằng React TypeScript + Spring Boot, kết nối PostgreSQL. Đây là phần bạn đã quen, làm nhanh để có nền chạy được end-to-end.
+2
+Tách microservices + OpenAPI
+Chia backend thành các service riêng (user, clinic, medication, diagnostic, notification), mỗi service có OpenAPI spec riêng. Dùng Docker Compose để chạy tất cả cục bộ.
+3
+Thêm GraphQL layer
+Dựng 1 GraphQL gateway (Apollo hoặc Spring GraphQL) tổng hợp dữ liệu từ các REST/microservice phía sau, thiết kế schema rõ ràng cho Patient, Appointment, Medication.
+4
+Redis + ElasticSearch
+Thêm Redis cache cho session/query hay dùng. Thêm ElasticSearch cho tìm kiếm bệnh nhân/thuốc theo tên, filter theo trạng thái — đây là tính năng dễ demo trực quan.
+5
+Kafka cho notification/workflow
+Khi tạo lịch hẹn hoặc kết quả xét nghiệm bất thường, publish event qua Kafka, notification-service consume và gửi email/thông báo real-time.
+6
+S3 + Lambda
+Upload tài liệu/kết quả xét nghiệm lên S3. Viết 1 Lambda function xử lý event upload (VD: quét virus giả lập, resize, hoặc gửi thông báo).
+7
+Redshift + EMR (điểm nhấn cuối)
+Nếu còn thời gian, dựng 1 pipeline nhỏ: export dữ liệu lịch sử khám từ Postgres, xử lý qua EMR/Glue job, load vào Redshift, dựng 1 dashboard thống kê đơn giản. Không cần phức tạp, chỉ cần chứng minh bạn hiểu luồng.
+
+4. Lưu ý khi triển khai
+Bước 1–4 nên làm chắc và kỹ nhất — đây là phần sẽ demo trực tiếp và nói sâu khi phỏng vấn.
+Bước 5–7 (Kafka, Lambda, Redshift/EMR) chỉ cần chạy ở mức proof-of-concept, không cần production-grade, vì JD liệt kê đây là kinh nghiệm đã có chứ không phải stack sử dụng hằng ngày.
+JD nhấn mạnh "vulnerable populations" và bảo mật — nên có audit log + RBAC chặt chẽ; có thể tái dùng ý tưởng role-and-process-based access control từ dự án Document & Workflow cũ.
+Push code lên GitHub kèm README rõ kiến trúc (diagram + lý do chọn từng công nghệ) — nhà tuyển dụng senior thường đọc README trước khi đọc code.
